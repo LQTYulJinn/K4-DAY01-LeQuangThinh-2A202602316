@@ -1,14 +1,16 @@
 # Báo cáo bài thực hành Ngày 1 – Đọc nhãn từ đầu ra YOLO11
 
-**Ngày chạy:** Chưa xác nhận từ notebook.
+**Ngày chạy:** [Cần điền ngày thực tế chạy Colab; notebook không lưu thời gian thực thi.]
 
-**Runtime Colab:** Chưa xác nhận CPU/GPU.
+**Runtime Colab:** CPU (`Device: cpu`).
 
-**Python / PyTorch / Ultralytics:** Python và PyTorch chưa xác nhận; Ultralytics `8.4.145` theo metadata trong các file JSON.
+**Python / PyTorch / Ultralytics:** Python `3.13.15`; PyTorch `2.11.0+cpu`; Ultralytics `8.4.145`, theo output ô setup Colab.
 
 **Checkpoint:** `yolo11n-cls.pt`, `yolo11n.pt`, `yolo11n-seg.pt`.
 
-**Thay đổi so với notebook nguồn:** Chưa xác nhận do chưa có notebook để đối chiếu.
+**Kiểm tra checksum checkpoint:** Output ô setup báo `PASS` cho cả ba checkpoint: `yolo11n-cls.pt` (`c62d41bf9625…`), `yolo11n.pt` (`0ebbc80d4a76…`) và `yolo11n-seg.pt` (`55ed65c56c91…`). Đây là các tiền tố SHA-256 hiển thị trong log; checksum đầy đủ nằm ở trường `model_sha256` trong ba JSON tương ứng.
+
+**Thay đổi so với notebook nguồn:** Đối chiếu với notebook trong repository: đổi `KHOA` từ `KX` thành `K4`; thêm một ô gọi `drive.mount("/content/drive")`; URL mẫu báo cáo tham chiếu commit `60ecb51ba58f90faa1da6982e29bd2efbb301c97` và checksum mẫu khác bản nguồn đang đối chiếu (commit mẫu `372b90e8e867530e559eed0424d4a594ec74163c`). Chưa xác định khác biệt mẫu báo cáo do phiên bản hay chỉnh sửa thủ công. Giữ nguyên package Ultralytics, ba checkpoint, ảnh mẫu và code suy luận; các mức threshold có sẵn là `0.20`, `0.35`, `0.60`.
 
 ## 1. Phân loại ảnh – prediction cấp ảnh
 
@@ -26,13 +28,23 @@ Nguồn bằng chứng: `classification_predictions.json` và `visuals/classific
 }
 ```
 
+**Record này mô tả toàn ảnh như thế nào?**
+
 Record cho biết mô hình chọn `cab` (taxi) là lớp có điểm cao nhất để mô tả toàn ảnh trong danh sách lớp của checkpoint. Đây là prediction cấp ảnh, không chỉ ra chiếc xe nào là taxi và không đếm số taxi. Ảnh thực tế có nhiều phương tiện, trong đó có nhiều xe buýt; vì vậy một nhãn duy nhất chưa mô tả đầy đủ cảnh giao thông.
+
+**Ai định nghĩa class list mà checkpoint có thể dự đoán?**
 
 Danh sách lớp xuất phát từ taxonomy của bộ dữ liệu huấn luyện và được bên xây dựng checkpoint sử dụng để định nghĩa đầu ra mô hình. Checkpoint này dùng `ImageNet-1K`; người dùng không thể chỉ đổi tên nhãn để mô hình nhận biết một lớp mới.
 
+**Vì sao cần giữ cả ID, tên lớp và tên taxonomy?**
+
 Cần giữ cả ID, tên lớp và tên taxonomy: ID phục vụ xử lý bằng máy, tên lớp giúp con người đọc hiểu, còn taxonomy xác định ngữ nghĩa và phạm vi của bộ nhãn. Cùng một ID trong hai taxonomy có thể mang ý nghĩa khác nhau.
 
+**Nếu ảnh có nhiều chủ thể, guideline cần quy định điều gì?**
+
 Với ảnh có nhiều chủ thể, guideline cần quy định dùng một nhãn hay nhiều nhãn; nếu dùng một nhãn thì phải có tiêu chí chọn chủ thể chính và cách xử lý khi không thể lựa chọn rõ ràng. Không tự động lấy top-1 của mô hình làm nhãn chuẩn.
+
+**Vì sao model score không phải ground truth?**
 
 Model score thể hiện mức điểm mô hình gán cho prediction, không phải chất lượng ground truth hoặc bằng chứng prediction chắc chắn đúng. Ground truth cần được con người gán và kiểm tra theo guideline. Score `0.510915` không chứng minh ảnh đã được gán nhãn đúng với tỷ lệ 51,09%.
 
@@ -52,6 +64,8 @@ Nguồn bằng chứng: `detection_predictions.json` và `visuals/detection_pred
 }
 ```
 
+**Diễn giải vị trí box bằng lời:**
+
 Ảnh gốc có kích thước `640 × 427` pixel. Box được ghi theo định dạng `[x_min, y_min, x_max, y_max]`, với gốc tọa độ tại góc trên bên trái. Box bao quanh người đứng ở nửa phải ảnh, từ gần đầu đến chân; góc trên trái ở `(385.33, 69.24)` và góc dưới phải ở `(498.92, 348.92)`. Chiều rộng và chiều cao được trích nguyên từ JSON; sai khác 0,01 pixel khi trừ các tọa độ đã làm tròn có thể xuất hiện do làm tròn riêng từng trường.
 
 **So sánh số prediction ở ba threshold:**
@@ -64,11 +78,15 @@ Nguồn bằng chứng: output ô so sánh threshold trong notebook đã chạy 
 | `0.35` | 11 |
 | `0.60` | 6 |
 
+**Ảnh hưởng đến độ bao phủ và khối lượng reviewer:**
+
 Khi hạ threshold từ `0.35` xuống `0.20`, số prediction tăng từ 11 lên 17, thêm 6 prediction gồm 3 `spoon`, 1 `potted plant`, 1 `dining table` và 1 `bottle`. Reviewer cần kiểm tra thêm các prediction này về lớp, vị trí box và khả năng dự đoán sai. Ngưỡng thấp có thể giúp tìm thêm đối tượng nhưng không bảo đảm các prediction bổ sung đều đúng.
 
 Khi tăng threshold từ `0.35` lên `0.60`, số prediction giảm từ 11 xuống 6, loại 3 prediction `bowl` và 2 `cup`; còn lại 2 `person`, 2 `bowl` và 2 `oven`. Số prediction cần kiểm tra giảm, nhưng các đối tượng có điểm thấp có thể bị bỏ sót. Threshold chỉ lọc prediction, không phải quy tắc bỏ qua đối tượng khi tạo ground truth. Chưa có ground truth đối chiếu nên không thể kết luận precision hoặc recall thực tế từ các số lượng này.
 
-**Quy tắc box chặt đề xuất:** Với quy ước gán nhãn phần nhìn thấy, vẽ hình chữ nhật nhỏ nhất bao hết phần nhìn thấy của từng đối tượng, hạn chế nền thừa và không cắt mất phần đối tượng có thể quan sát. Mỗi đối tượng có một box riêng.
+**Quy tắc box chặt đề xuất:** Với quy ước gán nhãn phần nhìn thấy, vẽ hình chữ nhật nhỏ nhất bao hết phần nhìn thấy của từng đối tượng, hạn chế nền thừa và không cắt mất phần đối tượng có thể quan sát. Mỗi đối tượng có một box riêng. Nếu có ba đối tượng cùng lớp, ground truth cần ba box riêng; số prediction có thể khác ba do mô hình bỏ sót hoặc phát hiện thừa.
+
+**Trường hợp cần guideline hoặc escalation quyết định:**
 
 Với đối tượng bị che khuất hoặc cắt mép, guideline cần xác định vẽ theo phần nhìn thấy hay ước lượng toàn bộ đối tượng, mức độ nhìn thấy tối thiểu để gán nhãn và cách đánh dấu trường hợp che khuất/cắt mép. Nếu chưa có quy định hoặc không đủ căn cứ xác định lớp, cần chuyển reviewer hoặc người phụ trách guideline quyết định. Ảnh có một prediction `person` ở mép trái chỉ bao vùng cơ thể nhìn thấy một phần; đây là trường hợp cần kiểm tra theo quy tắc đó.
 
@@ -96,11 +114,17 @@ Nguồn bằng chứng: `segmentation_predictions.json` và `visuals/segmentatio
 
 `polygon_xy_excerpt` ở trên là phần trích minh họa từ trường `polygon_xy`, không phải tên trường trong file nguồn. Tọa độ dùng đơn vị pixel của ảnh gốc. Sample `kitchen` có 11 instance trong file segmentation.
 
+**Polygon bổ sung chi tiết gì so với box?**
+
 Polygon mô tả đường biên của từng instance, bổ sung hình dạng chi tiết so với box chữ nhật. Ví dụ, mask người bám theo đầu, vai, tay và chân, giúp tách phần cơ thể khỏi phần nền nằm trong box, như khoảng trống giữa hai chân.
+
+**`instance_id` dùng để làm gì và không phải loại ID nào?**
 
 `instance_id` dùng để phân biệt và tham chiếu từng đối tượng trong đầu ra, kể cả khi nhiều đối tượng cùng lớp. `kitchen-001` không phải ID lớp, không phải danh tính cá nhân và không tự động là ID theo dõi ổn định của cùng một người qua nhiều ảnh hoặc video.
 
 **Quy tắc biên mask đề xuất:** Bám theo biên phần đối tượng nhìn thấy, không tô lan sang nền hoặc vật thể khác và giữ riêng các instance tiếp xúc nhau. Không tự suy đoán phần bị che khuất nếu guideline yêu cầu chỉ gán phần nhìn thấy.
+
+**Vùng mờ/tiếp xúc/che khuất cần guideline hoặc escalation quyết định gì?**
 
 Với vùng mờ, tiếp xúc hoặc che khuất, guideline cần quy định cách chọn biên, xử lý phần bị che, vùng rời nhau và lỗ bên trong mask. Nếu không thể xác định nhất quán, annotator đánh dấu vùng mơ hồ và chuyển reviewer quyết định. Trong ảnh, các bát ở mép trái tiếp xúc hoặc che nhau, còn mask bàn trải rộng qua vùng có nhiều vật dụng; cần đối chiếu kỹ biên giữa bàn và đồ vật. Các nhãn dụng cụ treo ở góc phải cũng chồng lên nhau, gây khó đọc khi kiểm tra bằng ảnh tổng quan.
 
@@ -122,7 +146,7 @@ Các điểm nêu trên là vị trí cần QC theo ảnh minh họa, không ph�
 
 **Quy tắc bảo vệ dữ liệu:** Chỉ sử dụng ảnh được cấp phép và thuộc phạm vi bài thực hành; không đưa họ tên, MSSV, email, số điện thoại hoặc dữ liệu nhạy cảm của người học vào báo cáo và output. Giữ thông tin ghi công nguồn ảnh theo tài liệu attribution.
 
-Nếu thấy ảnh hoặc dữ liệu không đúng phạm vi, tôi sẽ dừng xử lý và báo cho giảng viên hoặc người phụ trách bộ dữ liệu qua kênh được quy định, không tiếp tục phát tán dữ liệu. Đầu mối và kênh liên hệ cụ thể chưa được cung cấp.
+Nếu thấy ảnh hoặc dữ liệu không đúng phạm vi, tôi sẽ dừng xử lý và báo cho giảng viên hoặc người phụ trách bộ dữ liệu qua kênh được quy định, không tiếp tục phát tán dữ liệu. Sử dụng kênh hỗ trợ của lớp để liên hệ giảng viên/Lab Coach.
 
 Theo `IMAGE_ATTRIBUTION.md`, các ảnh được tải từ COCO 2017 validation:
 
@@ -146,5 +170,16 @@ Các PNG bằng chứng là phiên bản đã thêm lớp phủ prediction hoặ
 - [x] Ô validation cuối notebook báo `PASS` — đã xác nhận.
 - [x] Không có họ tên, MSSV hoặc dữ liệu nhạy cảm trong báo cáo/output — đã kiểm tra. Tên tác giả ảnh được giữ để ghi công nguồn.
 
-**Các thông tin còn cần bổ sung:** ngày chạy, CPU/GPU, phiên bản Python/PyTorch, thay đổi so với notebook nguồn. Các đường dẫn `visuals/` ở trên được tính từ thư mục `day1_lab_outputs/` chứa bằng chứng.
+**Kiểm tra checksum ảnh mẫu:** Ô tải ảnh báo `PASS` cho cả ba sample. SHA-256 đầy đủ trong cấu hình notebook:
+
+| Sample / COCO ID | SHA-256 |
+| --- | --- |
+| `traffic` / `210273` | `3ec23de63592c1eef86740fd46fed2cb66170fca02b695d37e6ae379dcee4355` |
+| `kitchen` / `397133` | `09e1d25c75f7879bdaa69c327fece5cabacd53939c8c2ef9e87f1c97a2e478c4` |
+| `dining` / `166918` | `a7f8457580a2bb8635ca7acd1b2061ea7977a84418e5e8441a77ba1f861d7e22` |
+
+**Output validation đã lưu trong notebook:** `PASS: đủ 3 JSON, 3 PNG, attribution và instance_id duy nhất.` Ô đóng gói tiếp theo báo lưu thành công `K4-DAY01-report.zip` vào Google Drive.
+
+Các tên JSON và đường dẫn `visuals/` ở trên được tính từ `day1_lab_outputs/`, nằm cùng cấp với `REPORT.md` trong thư mục bài nộp `report/`.
+
 
