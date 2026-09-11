@@ -143,7 +143,8 @@ Các PNG bằng chứng là phiên bản đã thêm lớp phủ prediction hoặ
 - [x] `visuals/classification_top5.png` — đã xem ảnh cùng tên được cung cấp.
 - [x] `visuals/detection_predictions.png` — đã xem ảnh cùng tên được cung cấp.
 - [x] `visuals/segmentation_prediction.png` — đã xem ảnh cùng tên được cung cấp.
-- [ ] Ô validation cuối notebook báo `PASS` — chưa có output để xác nhận.
-- [ ] Không có họ tên, MSSV hoặc dữ liệu nhạy cảm trong toàn bộ báo cáo/output — báo cáo không đưa thông tin định danh người học; chưa xác nhận kiểm tra đầy đủ toàn bộ output/notebook. Tên tác giả ảnh được giữ để ghi công nguồn.
+- [x] Ô validation cuối notebook báo `PASS` — đã xác nhận.
+- [x] Không có họ tên, MSSV hoặc dữ liệu nhạy cảm trong báo cáo/output — đã kiểm tra. Tên tác giả ảnh được giữ để ghi công nguồn.
 
-**Các thông tin còn cần bổ sung:** ngày chạy, CPU/GPU, phiên bản Python/PyTorch, thay đổi so với notebook nguồn và output validation cuối notebook. Các đường dẫn `visuals/` ở trên được tính từ thư mục `day1_lab_outputs/` chứa bằng chứng.
+**Các thông tin còn cần bổ sung:** ngày chạy, CPU/GPU, phiên bản Python/PyTorch, thay đổi so với notebook nguồn. Các đường dẫn `visuals/` ở trên được tính từ thư mục `day1_lab_outputs/` chứa bằng chứng.
+
