@@ -1,6 +1,6 @@
 # Báo cáo bài thực hành Ngày 1 – Đọc nhãn từ đầu ra YOLO11
 
-**Ngày chạy:** [Cần điền ngày thực tế chạy Colab; notebook không lưu thời gian thực thi.]
+**Ngày chạy:** 11/09/2026.
 
 **Runtime Colab:** CPU (`Device: cpu`).
 
@@ -181,5 +181,6 @@ Các PNG bằng chứng là phiên bản đã thêm lớp phủ prediction hoặ
 **Output validation đã lưu trong notebook:** `PASS: đủ 3 JSON, 3 PNG, attribution và instance_id duy nhất.` Ô đóng gói tiếp theo báo lưu thành công `K4-DAY01-report.zip` vào Google Drive.
 
 Các tên JSON và đường dẫn `visuals/` ở trên được tính từ `day1_lab_outputs/`, nằm cùng cấp với `REPORT.md` trong thư mục bài nộp `report/`.
+
 
 
