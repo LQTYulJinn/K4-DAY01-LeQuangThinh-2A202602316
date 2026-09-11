@@ -54,14 +54,19 @@ Nguồn bằng chứng: `detection_predictions.json` và `visuals/detection_pred
 
 Ảnh gốc có kích thước `640 × 427` pixel. Box được ghi theo định dạng `[x_min, y_min, x_max, y_max]`, với gốc tọa độ tại góc trên bên trái. Box bao quanh người đứng ở nửa phải ảnh, từ gần đầu đến chân; góc trên trái ở `(385.33, 69.24)` và góc dưới phải ở `(498.92, 348.92)`. Chiều rộng và chiều cao được trích nguyên từ JSON; sai khác 0,01 pixel khi trừ các tọa độ đã làm tròn có thể xuất hiện do làm tròn riêng từng trường.
 
-**So sánh số prediction ở hai threshold:**
+**So sánh số prediction ở ba threshold:**
+
+Nguồn bằng chứng: output ô so sánh threshold trong notebook đã chạy trên Colab, sample `kitchen`. File JSON lưu kết quả tại threshold `0.35`.
 
 | Threshold | Số prediction của sample `kitchen` |
 | --- | ---: |
+| `0.20` | 17 |
 | `0.35` | 11 |
-| Threshold thứ hai: chưa có bằng chứng | Chưa xác nhận |
+| `0.60` | 6 |
 
-File JSON chỉ chứa threshold `0.35`, nên chưa thể báo cáo kết quả thực nghiệm ở threshold thứ hai. Về nguyên tắc, hạ ngưỡng điểm cho phép giữ thêm các prediction có điểm thấp, có thể tăng khả năng tìm thấy đối tượng nhưng cũng tăng prediction sai và khối lượng reviewer cần xem. Tăng ngưỡng loại bớt các prediction điểm thấp, giảm số mục cần kiểm tra nhưng có thể bỏ sót đối tượng. Chưa có ground truth đối chiếu nên không thể kết luận precision hoặc recall thực tế từ số prediction.
+Khi hạ threshold từ `0.35` xuống `0.20`, số prediction tăng từ 11 lên 17, thêm 6 prediction gồm 3 `spoon`, 1 `potted plant`, 1 `dining table` và 1 `bottle`. Reviewer cần kiểm tra thêm các prediction này về lớp, vị trí box và khả năng dự đoán sai. Ngưỡng thấp có thể giúp tìm thêm đối tượng nhưng không bảo đảm các prediction bổ sung đều đúng.
+
+Khi tăng threshold từ `0.35` lên `0.60`, số prediction giảm từ 11 xuống 6, loại 3 prediction `bowl` và 2 `cup`; còn lại 2 `person`, 2 `bowl` và 2 `oven`. Số prediction cần kiểm tra giảm, nhưng các đối tượng có điểm thấp có thể bị bỏ sót. Threshold chỉ lọc prediction, không phải quy tắc bỏ qua đối tượng khi tạo ground truth. Chưa có ground truth đối chiếu nên không thể kết luận precision hoặc recall thực tế từ các số lượng này.
 
 **Quy tắc box chặt đề xuất:** Với quy ước gán nhãn phần nhìn thấy, vẽ hình chữ nhật nhỏ nhất bao hết phần nhìn thấy của từng đối tượng, hạn chế nền thừa và không cắt mất phần đối tượng có thể quan sát. Mỗi đối tượng có một box riêng.
 
@@ -141,4 +146,4 @@ Các PNG bằng chứng là phiên bản đã thêm lớp phủ prediction hoặ
 - [ ] Ô validation cuối notebook báo `PASS` — chưa có output để xác nhận.
 - [ ] Không có họ tên, MSSV hoặc dữ liệu nhạy cảm trong toàn bộ báo cáo/output — báo cáo không đưa thông tin định danh người học; chưa xác nhận kiểm tra đầy đủ toàn bộ output/notebook. Tên tác giả ảnh được giữ để ghi công nguồn.
 
-**Các thông tin còn cần bổ sung:** ngày chạy, CPU/GPU, phiên bản Python/PyTorch, thay đổi so với notebook nguồn, kết quả detection tại threshold thứ hai và output validation cuối notebook. Các đường dẫn `visuals/` ở trên theo cấu trúc mẫu báo cáo; cần đặt ảnh vào đúng thư mục khi đóng gói bài nộp.
+**Các thông tin còn cần bổ sung:** ngày chạy, CPU/GPU, phiên bản Python/PyTorch, thay đổi so với notebook nguồn và output validation cuối notebook. Các đường dẫn `visuals/` ở trên được tính từ thư mục `day1_lab_outputs/` chứa bằng chứng.
